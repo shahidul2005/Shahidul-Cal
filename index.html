@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SHAHIDUL CAL — Professional Calculator Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --surface2: #1a1e29;
+    --border: #252a38;
+    --accent: #00e5b0;
+    --accent2: #4f7cff;
+    --accent3: #ff6b6b;
+    --accent4: #ffc93c;
+    --text: #e8eaf0;
+    --muted: #6b7394;
+    --card: #161a24;
+    --radius: 16px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 32px 40px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .wordmark {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .tagline {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  /* ── TABS ── */
+  nav {
+    display: flex;
+    gap: 8px;
+    padding: 32px 40px 0;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: 50px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .tab-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .tab-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0d0f14;
+    font-weight: 600;
+  }
+  .tab-btn .icon { font-size: 1rem; }
+
+  /* ── MAIN LAYOUT ── */
+  main {
+    flex: 1;
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+  }
+  .panel { display: none; width: 100%; max-width: 600px; }
+  .panel.active { display: block; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  #age-panel .card::before { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  #bmi-panel .card::before { background: linear-gradient(90deg, var(--accent2), #a855f7); }
+  #loan-panel .card::before { background: linear-gradient(90deg, var(--accent4), var(--accent3)); }
+  #tip-panel .card::before { background: linear-gradient(90deg, var(--accent3), var(--accent4)); }
+  #basic-panel .card::before { background: linear-gradient(90deg, var(--accent), #00b4d8); }
+
+  .card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.7rem;
+    margin-bottom: 6px;
+  }
+  .card-desc {
+    color: var(--muted);
+    font-size: 0.875rem;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  /* ── FORM ── */
+  .field { margin-bottom: 20px; }
+  label {
+    display: block;
+    font-size: 0.78rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    margin-bottom: 8px;
+    font-family: 'DM Mono', monospace;
+  }
+  input[type="date"], input[type="number"], input[type="text"], select {
+    width: 100%;
+    padding: 13px 16px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  input:focus, select:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* ── BUTTON ── */
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: opacity 0.2s, transform 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn-age   { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #0d0f14; }
+  .btn-bmi   { background: linear-gradient(135deg, var(--accent2), #a855f7); color: #fff; }
+  .btn-loan  { background: linear-gradient(135deg, var(--accent4), var(--accent3)); color: #0d0f14; }
+  .btn-tip   { background: linear-gradient(135deg, var(--accent3), var(--accent4)); color: #0d0f14; }
+
+  /* ── RESULTS ── */
+  .result-grid {
+    display: grid;
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .result-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .result-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .result-grid.cols-1 { grid-template-columns: 1fr; }
+
+  .stat-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 16px;
+    text-align: center;
+  }
+  .stat-box.highlight {
+    background: transparent;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent) inset, 0 0 28px rgba(0,229,176,0.08);
+  }
+  .stat-box.highlight .stat-value { color: var(--accent); }
+  .stat-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .bmi-bar-wrap {
+    margin-top: 24px;
+  }
+  .bmi-bar-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .bmi-bar-track {
+    height: 12px;
+    border-radius: 50px;
+    background: linear-gradient(90deg, #4f7cff 0%, #00e5b0 30%, #ffc93c 65%, #ff6b6b 100%);
+    position: relative;
+    overflow: visible;
+  }
+  .bmi-needle {
+    position: absolute;
+    top: -4px;
+    width: 4px;
+    height: 20px;
+    background: white;
+    border-radius: 4px;
+    transform: translateX(-50%);
+    box-shadow: 0 0 8px rgba(255,255,255,0.6);
+    transition: left 0.5s cubic-bezier(.4,0,.2,1);
+  }
+  .bmi-cats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+  .bmi-status {
+    text-align: center;
+    margin-top: 16px;
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 24px 0;
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .label { color: var(--muted); }
+  .info-row .value { font-family: 'DM Mono', monospace; font-weight: 500; }
+  .info-row .value.green { color: var(--accent); }
+  .info-row .value.yellow { color: var(--accent4); }
+  .info-row .value.red { color: var(--accent3); }
+
+  /* ── BASIC CALC ── */
+  .calc-display {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    text-align: right;
+    margin-bottom: 16px;
+  }
+  .calc-expr {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--muted);
+    min-height: 1.2em;
+    margin-bottom: 4px;
+  }
+  .calc-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.5rem;
+    letter-spacing: -1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .calc-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .calc-key {
+    padding: 18px 10px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .calc-key:hover { opacity: 0.75; transform: scale(0.96); }
+  .calc-key.op   { background: var(--surface); color: var(--accent); border-color: var(--accent); }
+  .calc-key.util { background: var(--surface); color: var(--muted); }
+  .calc-key.eq   { background: var(--accent); color: #0d0f14; border-color: var(--accent); font-weight: 700; grid-column: span 1; }
+  .calc-key.zero { grid-column: span 2; text-align: left; padding-left: 24px; }
+
+  /* ── TIP ── */
+  .tip-pct-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .tip-pct-btn {
+    flex: 1;
+    min-width: 60px;
+    padding: 10px 8px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .tip-pct-btn.selected {
+    border-color: var(--accent3);
+    color: var(--accent3);
+    background: rgba(255,107,107,0.08);
+  }
+
+  /* ── HIDDEN ── */
+  .result-section { display: none; }
+  .result-section.show { display: block; }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 24px 40px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  @media (max-width: 520px) {
+    header, nav, main, footer { padding-left: 20px; padding-right: 20px; }
+    .card { padding: 24px 20px; }
+    .row { grid-template-columns: 1fr; }
+    .result-grid.cols-3 { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wordmark">SHAHIDUL CAL</div>
+  <div class="tagline">Professional · Precise · Powerful</div>
+</header>
+
+<nav>
+  <button class="tab-btn active" onclick="showTab('age')" id="tab-age">
+    <span class="icon">📅</span> Age
+  </button>
+  <button class="tab-btn" onclick="showTab('bmi')" id="tab-bmi">
+    <span class="icon">⚖️</span> BMI
+  </button>
+  <button class="tab-btn" onclick="showTab('loan')" id="tab-loan">
+    <span class="icon">💰</span> Loan
+  </button>
+  <button class="tab-btn" onclick="showTab('tip')" id="tab-tip">
+    <span class="icon">🧾</span> Tip
+  </button>
+  <button class="tab-btn" onclick="showTab('basic')" id="tab-basic">
+    <span class="icon">🧮</span> Calc
+  </button>
+</nav>
+
+<main>
+
+  <!-- ── AGE PANEL ── -->
+  <div class="panel active" id="age-panel">
+    <div class="card">
+      <div class="card-title">Age Calculator</div>
+      <div class="card-desc">Your exact age — down to the second. Enter your date of birth below.</div>
+
+      <div class="field">
+        <label>Date of Birth</label>
+        <input type="date" id="age-dob" max="" />
+      </div>
+      <div class="field">
+        <label>Calculate As Of</label>
+        <input type="date" id="age-asof" />
+      </div>
+      <button class="btn btn-age" onclick="calcAge()">Calculate Age →</button>
+
+      <div class="result-section" id="age-results">
+        <hr class="divider">
+        <div class="result-grid cols-3">
+          <div class="stat-box highlight">
+            <div class="stat-value" id="r-years">—</div>
+            <div class="stat-label">Years</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="r-months">—</div>
+            <div class="stat-label">Months</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="r-weeks">—</div>
+            <div class="stat-label">Weeks</div>
+          </div>
+        </div>
+        <div class="result-grid cols-3" style="margin-top:12px">
+          <div class="stat-box">
+            <div class="stat-value" id="r-days">—</div>
+            <div class="stat-label">Days</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="r-hours">—</div>
+            <div class="stat-label">Hours</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="r-mins">—</div>
+            <div class="stat-label">Minutes</div>
+          </div>
+        </div>
+        <hr class="divider">
+        <div class="info-row">
+          <span class="label">Next Birthday</span>
+          <span class="value green" id="r-nextbday">—</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Day of Birth</span>
+          <span class="value" id="r-bday">—</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Zodiac Sign</span>
+          <span class="value yellow" id="r-zodiac">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BMI PANEL ── -->
+  <div class="panel" id="bmi-panel">
+    <div class="card">
+      <div class="card-title">BMI Calculator</div>
+      <div class="card-desc">Body Mass Index — understand where you stand on the health spectrum.</div>
+
+      <div class="field">
+        <label>Unit System</label>
+        <select id="bmi-unit" onchange="toggleBmiUnit()">
+          <option value="metric">Metric (kg / cm)</option>
+          <option value="imperial">Imperial (lbs / ft·in)</option>
+        </select>
+      </div>
+
+      <div id="bmi-metric">
+        <div class="row">
+          <div class="field">
+            <label>Weight (kg)</label>
+            <input type="number" id="bmi-kg" placeholder="70" min="1" max="500" />
+          </div>
+          <div class="field">
+            <label>Height (cm)</label>
+            <input type="number" id="bmi-cm" placeholder="175" min="1" max="300" />
+          </div>
+        </div>
+      </div>
+
+      <div id="bmi-imperial" style="display:none">
+        <div class="field">
+          <label>Weight (lbs)</label>
+          <input type="number" id="bmi-lbs" placeholder="154" min="1" max="1000" />
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Height — Feet</label>
+            <input type="number" id="bmi-ft" placeholder="5" min="1" max="9" />
+          </div>
+          <div class="field">
+            <label>Height — Inches</label>
+            <input type="number" id="bmi-in" placeholder="9" min="0" max="11" />
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-bmi" onclick="calcBmi()">Calculate BMI →</button>
+
+      <div class="result-section" id="bmi-results">
+        <hr class="divider">
+        <div class="result-grid cols-2">
+          <div class="stat-box highlight" style="border-color:var(--accent2);box-shadow:0 0 28px rgba(79,124,255,0.1)">
+            <div class="stat-value" id="r-bmi" style="color:var(--accent2)">—</div>
+            <div class="stat-label">BMI Score</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value bmi-status" id="r-bmi-cat" style="font-size:1.1rem;padding-top:4px">—</div>
+            <div class="stat-label">Category</div>
+          </div>
+        </div>
+        <div class="bmi-bar-wrap">
+          <div class="bmi-bar-label">BMI Scale</div>
+          <div class="bmi-bar-track">
+            <div class="bmi-needle" id="bmi-needle" style="left:0%"></div>
+          </div>
+          <div class="bmi-cats">
+            <span>Underweight</span>
+            <span>Normal</span>
+            <span>Overweight</span>
+            <span>Obese</span>
+          </div>
+        </div>
+        <hr class="divider">
+        <div class="info-row">
+          <span class="label">Healthy Range</span>
+          <span class="value green" id="r-bmi-healthy">—</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Ideal Weight</span>
+          <span class="value" id="r-bmi-ideal">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LOAN PANEL ── -->
+  <div class="panel" id="loan-panel">
+    <div class="card">
+      <div class="card-title">Loan Calculator</div>
+      <div class="card-desc">Understand your repayments before you sign. Monthly payment, total cost, and interest breakdown.</div>
+
+      <div class="field">
+        <label>Loan Amount ($)</label>
+        <input type="number" id="loan-amt" placeholder="20000" min="0" />
+      </div>
+      <div class="row">
+        <div class="field">
+          <label>Annual Interest (%)</label>
+          <input type="number" id="loan-rate" placeholder="6.5" step="0.1" min="0" max="100" />
+        </div>
+        <div class="field">
+          <label>Loan Term (Years)</label>
+          <input type="number" id="loan-term" placeholder="5" min="1" max="50" />
+        </div>
+      </div>
+      <button class="btn btn-loan" onclick="calcLoan()">Calculate Loan →</button>
+
+      <div class="result-section" id="loan-results">
+        <hr class="divider">
+        <div class="result-grid cols-2" style="margin-bottom:12px">
+          <div class="stat-box highlight" style="border-color:var(--accent4);box-shadow:0 0 28px rgba(255,201,60,0.08)">
+            <div class="stat-value" id="r-monthly" style="color:var(--accent4);font-size:1.6rem">—</div>
+            <div class="stat-label">Monthly Payment</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="r-total-pay" style="font-size:1.5rem">—</div>
+            <div class="stat-label">Total Payment</div>
+          </div>
+        </div>
+        <div class="info-row">
+          <span class="label">Principal</span>
+          <span class="value green" id="r-principal">—</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Total Interest</span>
+          <span class="value red" id="r-interest">—</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Total Payments</span>
+          <span class="value" id="r-npayments">—</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Interest / Principal Ratio</span>
+          <span class="value yellow" id="r-ratio">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TIP PANEL ── -->
+  <div class="panel" id="tip-panel">
+    <div class="card">
+      <div class="card-title">Tip Calculator</div>
+      <div class="card-desc">Split the bill effortlessly. Select a tip percentage, split among your group.</div>
+
+      <div class="field">
+        <label>Bill Amount ($)</label>
+        <input type="number" id="tip-bill" placeholder="85.50" min="0" step="0.01" oninput="calcTip()" />
+      </div>
+
+      <div class="field">
+        <label>Tip Percentage</label>
+        <div class="tip-pct-group">
+          <div class="tip-pct-btn" onclick="selectTip(10)">10%</div>
+          <div class="tip-pct-btn selected" onclick="selectTip(15)">15%</div>
+          <div class="tip-pct-btn" onclick="selectTip(18)">18%</div>
+          <div class="tip-pct-btn" onclick="selectTip(20)">20%</div>
+          <div class="tip-pct-btn" onclick="selectTip(25)">25%</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Split Between (People)</label>
+        <input type="number" id="tip-people" placeholder="2" min="1" value="2" oninput="calcTip()" />
+      </div>
+
+      <div class="result-section show" id="tip-results">
+        <hr class="divider">
+        <div class="result-grid cols-3" style="margin-bottom:12px">
+          <div class="stat-box highlight" style="border-color:var(--accent3);box-shadow:0 0 28px rgba(255,107,107,0.08)">
+            <div class="stat-value" id="r-per-person" style="color:var(--accent3);font-size:1.5rem">$0.00</div>
+            <div class="stat-label">Per Person</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="r-tip-amt" style="font-size:1.5rem">$0.00</div>
+            <div class="stat-label">Tip Total</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="r-grand" style="font-size:1.5rem">$0.00</div>
+            <div class="stat-label">Grand Total</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BASIC CALC PANEL ── -->
+  <div class="panel" id="basic-panel">
+    <div class="card">
+      <div class="card-title">Calculator</div>
+      <div class="card-desc">Fast, clean arithmetic. Keyboard input supported.</div>
+
+      <div class="calc-display">
+        <div class="calc-expr" id="calc-expr"></div>
+        <div class="calc-num" id="calc-num">0</div>
+      </div>
+
+      <div class="calc-grid">
+        <button class="calc-key util" onclick="calcKey('AC')">AC</button>
+        <button class="calc-key util" onclick="calcKey('+/-')">+/−</button>
+        <button class="calc-key util" onclick="calcKey('%')">%</button>
+        <button class="calc-key op"  onclick="calcKey('/')">÷</button>
+
+        <button class="calc-key" onclick="calcKey('7')">7</button>
+        <button class="calc-key" onclick="calcKey('8')">8</button>
+        <button class="calc-key" onclick="calcKey('9')">9</button>
+        <button class="calc-key op" onclick="calcKey('*')">×</button>
+
+        <button class="calc-key" onclick="calcKey('4')">4</button>
+        <button class="calc-key" onclick="calcKey('5')">5</button>
+        <button class="calc-key" onclick="calcKey('6')">6</button>
+        <button class="calc-key op" onclick="calcKey('-')">−</button>
+
+        <button class="calc-key" onclick="calcKey('1')">1</button>
+        <button class="calc-key" onclick="calcKey('2')">2</button>
+        <button class="calc-key" onclick="calcKey('3')">3</button>
+        <button class="calc-key op" onclick="calcKey('+')">+</button>
+
+        <button class="calc-key zero" onclick="calcKey('0')">0</button>
+        <button class="calc-key" onclick="calcKey('.')">.</button>
+        <button class="calc-key eq" onclick="calcKey('=')">=</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  SHAHIDUL CAL &mdash; Built for GitHub Pages &mdash; <a href="#">View Source</a>
+</footer>
+
+<script>
+// ── TAB SWITCHING ──
+function showTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(name + '-panel').classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+// ── AGE CALCULATOR ──
+(function initAge() {
+  const today = new Date();
+  document.getElementById('age-asof').value = today.toISOString().split('T')[0];
+  document.getElementById('age-dob').max = today.toISOString().split('T')[0];
+})();
+
+function calcAge() {
+  const dob = new Date(document.getElementById('age-dob').value);
+  const asof = new Date(document.getElementById('age-asof').value);
+  if (!document.getElementById('age-dob').value || isNaN(dob) || dob > asof) return;
+
+  let years = asof.getFullYear() - dob.getFullYear();
+  let months = asof.getMonth() - dob.getMonth();
+  let days = asof.getDate() - dob.getDate();
+  if (days < 0) { months--; days += new Date(asof.getFullYear(), asof.getMonth(), 0).getDate(); }
+  if (months < 0) { years--; months += 12; }
+
+  const totalDays = Math.floor((asof - dob) / 86400000);
+  const totalWeeks = Math.floor(totalDays / 7);
+  const totalMonths = years * 12 + months;
+  const totalHours = Math.floor(totalDays * 24);
+  const totalMins = Math.floor(totalHours * 60);
+
+  const fmt = n => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? (n/1e3).toFixed(1)+'K' : n;
+
+  document.getElementById('r-years').textContent = years;
+  document.getElementById('r-months').textContent = totalMonths;
+  document.getElementById('r-weeks').textContent = fmt(totalWeeks);
+  document.getElementById('r-days').textContent = fmt(totalDays);
+  document.getElementById('r-hours').textContent = fmt(totalHours);
+  document.getElementById('r-mins').textContent = fmt(totalMins);
+
+  // next birthday
+  const nextBday = new Date(asof.getFullYear(), dob.getMonth(), dob.getDate());
+  if (nextBday <= asof) nextBday.setFullYear(nextBday.getFullYear() + 1);
+  const daysUntil = Math.ceil((nextBday - asof) / 86400000);
+  document.getElementById('r-nextbday').textContent = daysUntil === 0 ? '🎂 Today!' : `${daysUntil} days`;
+
+  const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  document.getElementById('r-bday').textContent = dayNames[dob.getDay()];
+  document.getElementById('r-zodiac').textContent = getZodiac(dob.getMonth()+1, dob.getDate());
+
+  document.getElementById('age-results').classList.add('show');
+}
+
+function getZodiac(m, d) {
+  const signs = [
+    [1,20,'Aquarius'],[2,19,'Pisces'],[3,21,'Aries'],[4,20,'Taurus'],
+    [5,21,'Gemini'],[6,21,'Cancer'],[7,23,'Leo'],[8,23,'Virgo'],
+    [9,23,'Libra'],[10,23,'Scorpio'],[11,22,'Sagittarius'],[12,22,'Capricorn']
+  ];
+  for (let i = 0; i < signs.length; i++) {
+    const [sm, sd, name] = signs[i];
+    const [nm] = signs[(i+1) % 12];
+    const nextSd = signs[(i+1) % 12][1];
+    if (m === sm && d >= sd) return name;
+    if (m === nm && d < nextSd) return name;
+  }
+  return 'Capricorn';
+}
+
+// ── BMI CALCULATOR ──
+function toggleBmiUnit() {
+  const isImperial = document.getElementById('bmi-unit').value === 'imperial';
+  document.getElementById('bmi-metric').style.display = isImperial ? 'none' : 'block';
+  document.getElementById('bmi-imperial').style.display = isImperial ? 'block' : 'none';
+}
+
+function calcBmi() {
+  const unit = document.getElementById('bmi-unit').value;
+  let bmi, heightM;
+
+  if (unit === 'metric') {
+    const kg = parseFloat(document.getElementById('bmi-kg').value);
+    const cm = parseFloat(document.getElementById('bmi-cm').value);
+    if (!kg || !cm) return;
+    heightM = cm / 100;
+    bmi = kg / (heightM * heightM);
+    const minKg = 18.5 * heightM * heightM;
+    const maxKg = 24.9 * heightM * heightM;
+    const idealKg = 22 * heightM * heightM;
+    document.getElementById('r-bmi-healthy').textContent = `${minKg.toFixed(1)} – ${maxKg.toFixed(1)} kg`;
+    document.getElementById('r-bmi-ideal').textContent = `${idealKg.toFixed(1)} kg`;
+  } else {
+    const lbs = parseFloat(document.getElementById('bmi-lbs').value);
+    const ft = parseFloat(document.getElementById('bmi-ft').value) || 0;
+    const inch = parseFloat(document.getElementById('bmi-in').value) || 0;
+    const totalIn = ft * 12 + inch;
+    if (!lbs || !totalIn) return;
+    bmi = (703 * lbs) / (totalIn * totalIn);
+    const minLbs = (18.5 * totalIn * totalIn) / 703;
+    const maxLbs = (24.9 * totalIn * totalIn) / 703;
+    const idealLbs = (22 * totalIn * totalIn) / 703;
+    document.getElementById('r-bmi-healthy').textContent = `${minLbs.toFixed(1)} – ${maxLbs.toFixed(1)} lbs`;
+    document.getElementById('r-bmi-ideal').textContent = `${idealLbs.toFixed(1)} lbs`;
+  }
+
+  document.getElementById('r-bmi').textContent = bmi.toFixed(1);
+
+  let cat, color;
+  if (bmi < 18.5) { cat = '🥶 Underweight'; color = '#4f7cff'; }
+  else if (bmi < 25) { cat = '✅ Normal'; color = '#00e5b0'; }
+  else if (bmi < 30) { cat = '⚠️ Overweight'; color = '#ffc93c'; }
+  else { cat = '🔴 Obese'; color = '#ff6b6b'; }
+
+  document.getElementById('r-bmi-cat').textContent = cat;
+
+  // position needle: BMI 10 = 0%, BMI 40 = 100%
+  const pct = Math.min(100, Math.max(0, ((bmi - 10) / 30) * 100));
+  document.getElementById('bmi-needle').style.left = pct + '%';
+
+  document.getElementById('bmi-results').classList.add('show');
+}
+
+// ── LOAN CALCULATOR ──
+function calcLoan() {
+  const P = parseFloat(document.getElementById('loan-amt').value);
+  const r = parseFloat(document.getElementById('loan-rate').value) / 100 / 12;
+  const n = parseFloat(document.getElementById('loan-term').value) * 12;
+  if (!P || !n) return;
+
+  let monthly;
+  if (r === 0) {
+    monthly = P / n;
+  } else {
+    monthly = P * r * Math.pow(1+r, n) / (Math.pow(1+r, n) - 1);
+  }
+  const totalPay = monthly * n;
+  const totalInterest = totalPay - P;
+  const ratio = ((totalInterest / P) * 100).toFixed(1);
+
+  const fmt = v => '$' + v.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  document.getElementById('r-monthly').textContent = fmt(monthly);
+  document.getElementById('r-total-pay').textContent = fmt(totalPay);
+  document.getElementById('r-principal').textContent = fmt(P);
+  document.getElementById('r-interest').textContent = fmt(totalInterest);
+  document.getElementById('r-npayments').textContent = n + ' payments';
+  document.getElementById('r-ratio').textContent = ratio + '%';
+
+  document.getElementById('loan-results').classList.add('show');
+}
+
+// ── TIP CALCULATOR ──
+let selectedTip = 15;
+
+function selectTip(pct) {
+  selectedTip = pct;
+  document.querySelectorAll('.tip-pct-btn').forEach(b => {
+    b.classList.toggle('selected', b.textContent === pct + '%');
+  });
+  calcTip();
+}
+
+function calcTip() {
+  const bill = parseFloat(document.getElementById('tip-bill').value) || 0;
+  const people = parseInt(document.getElementById('tip-people').value) || 1;
+  const tipAmt = bill * (selectedTip / 100);
+  const grand = bill + tipAmt;
+  const perPerson = grand / people;
+
+  const fmt = v => '$' + v.toFixed(2);
+  document.getElementById('r-tip-amt').textContent = fmt(tipAmt);
+  document.getElementById('r-grand').textContent = fmt(grand);
+  document.getElementById('r-per-person').textContent = fmt(perPerson);
+}
+
+// ── BASIC CALCULATOR ──
+let calcState = { current: '0', prev: '', op: '', freshResult: false };
+
+function updateDisplay() {
+  const num = parseFloat(calcState.current);
+  const display = isNaN(num) ? calcState.current
+    : num.toLocaleString('en-US', { maximumFractionDigits: 9, useGrouping: true });
+  document.getElementById('calc-num').textContent = display;
+  document.getElementById('calc-expr').textContent = calcState.prev && calcState.op
+    ? calcState.prev + ' ' + ({ '+':'+', '-':'−', '*':'×', '/':'÷' }[calcState.op] || calcState.op)
+    : '';
+}
+
+function calcKey(k) {
+  const s = calcState;
+  if (k === 'AC') {
+    s.current = '0'; s.prev = ''; s.op = ''; s.freshResult = false;
+  } else if (k === '+/-') {
+    s.current = (parseFloat(s.current) * -1).toString();
+  } else if (k === '%') {
+    s.current = (parseFloat(s.current) / 100).toString();
+  } else if (['+','-','*','/'].includes(k)) {
+    if (s.op && !s.freshResult) {
+      s.current = doMath(parseFloat(s.prev), parseFloat(s.current), s.op).toString();
+    }
+    s.prev = s.current; s.op = k; s.freshResult = false;
+    s.current = '0';
+  } else if (k === '=') {
+    if (!s.op) return;
+    s.current = doMath(parseFloat(s.prev), parseFloat(s.current), s.op).toString();
+    s.prev = ''; s.op = ''; s.freshResult = true;
+  } else if (k === '.') {
+    if (!s.current.includes('.')) s.current += '.';
+  } else {
+    if (s.current === '0' || s.freshResult) { s.current = k; s.freshResult = false; }
+    else s.current += k;
+  }
+  updateDisplay();
+}
+
+function doMath(a, b, op) {
+  if (op === '+') return a + b;
+  if (op === '-') return a - b;
+  if (op === '*') return a * b;
+  if (op === '/') return b !== 0 ? a / b : 'Error';
+  return b;
+}
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('basic-panel').classList.contains('active')) return;
+  const map = {
+    '0':'0','1':'1','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8','9':'9',
+    '+':'+','-':'-','*':'*','/':'/','Enter':'=','=':'=','Backspace':'⌫','.':'.'
+  };
+  if (map[e.key]) { e.preventDefault(); calcKey(map[e.key]); }
+  if (e.key === 'Escape') calcKey('AC');
+  if (e.key === 'Backspace') {
+    const s = calcState;
+    s.current = s.current.length > 1 ? s.current.slice(0,-1) : '0';
+    updateDisplay();
+  }
+});
+
+// init
+updateDisplay();
+calcTip();
+</script>
+</body>
+</html>
